@@ -200,15 +200,7 @@ function buildBoard(allClues: Clue[], round: RoundId): BuiltBoard {
 
       for (let ri = 0; ri < NUM_ROWS; ri++) {
         const target = values[ri];
-        let best: { v: number; c: Clue } | null = null;
-        for (const [v0, c] of valued) {
-          const v = v0!;
-          const id = (c as any).__idx as number | undefined;
-          const key = id ?? (Math.random() * 1e9) | 0;
-          // (we avoid object identity hacks; we’ll mark used by position below)
-          // We'll instead mark used by array index:
-        }
-        // simpler: pick closest unused by index
+        // Pick closest unused by index.
         let bestIdx = -1;
         let bestDiff = Infinity;
         for (let i = 0; i < valued.length; i++) {
@@ -352,7 +344,7 @@ function nowId() {
 function TerminalLine({ line }: { line: { id: string; text: string; dim?: boolean } }) {
   return (
     <div
-      className={line.dim ? "text-blue-200" : "text-blue-400"}
+      className={line.dim ? "text-red-200" : "text-red-400"}
       style={{
         textShadow: line.dim
           ? "0 0 2px rgba(255,255,255,0.2)"
@@ -807,14 +799,14 @@ if (phase === "round_board") {
   return (
     <div className="rounded-2xl border border-black/10 bg-white/70 p-4 shadow-sm">
       <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="text-sm text-blue-400 font-semibold"></div>
-        <div className="text-xs text-blue-300">
-          Round: <span className="font-semibold text-blue-400">{round}</span> · Score:{" "}
-          <span className="font-semibold text-blue-400">${score}</span>
+        <div className="text-sm text-red-400 font-semibold"></div>
+        <div className="text-xs text-red-300">
+          Round: <span className="font-semibold text-red-400">{round}</span> · Score:{" "}
+          <span className="font-semibold text-red-400">${score}</span>
           {timer != null ? (
             <>
               {" "}
-              · ⏳ <span className="font-semibold text-blue-300">{timer}s</span>
+              · ⏳ <span className="font-semibold text-red-300">{timer}s</span>
             </>
           ) : null}
         </div>
@@ -830,7 +822,7 @@ if (phase === "round_board") {
         </div>
 
         <div className="mt-3 flex items-center gap-2">
-          <span className="font-mono text-[12px] text-blue-100">{">"}</span>
+          <span className="font-mono text-[12px] text-red-100">{">"}</span>
           <input
             ref={inputRef}
             value={input}
