@@ -203,6 +203,16 @@ function Home() {
                     >
                       hanky.info
                     </a>
+                    . I&apos;d also like to extend, very warmly, my gratitude, to Robert Fidler, who helped me build this
+                    site (and who&apos;s always challenging me to think harder about things). His work can be seen at{" "}
+                    <a
+                      href="https://bobbyfidz.tech"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline font-semibold text-[#7a001f]"
+                    >
+                      bobbyfidz.tech
+                    </a>
                     .
                   </p>
                   <p>
