@@ -6,7 +6,8 @@ import * as React from "react";
    - Player cards at bottom
    - Symmetric card sizing
    - Smaller action buttons in a single row at bottom
-   - “Blue vectory” card backs
+   - Rutgers-style scarlet monogram card backs
+   - Creamy off-white card faces
    ========================= */
 
 // gin rummy game
@@ -236,7 +237,13 @@ function CardBack({
 }: {
   title?: string;
 }) {
-  // “blue vectory” back: gradient + thin diagonal lines + simple center mark
+  const monogramSvg = encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+      <text x="16" y="22" text-anchor="middle" font-size="19" font-family="'Times New Roman', Garamond, Georgia, serif" font-weight="700" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.55">R</text>
+      <text x="16" y="22" text-anchor="middle" font-size="19" font-family="'Times New Roman', Garamond, Georgia, serif" font-weight="700" fill="rgba(255,255,255,0.26)">R</text>
+    </svg>`,
+  );
+
   return (
     <div
       title={title}
@@ -244,20 +251,22 @@ function CardBack({
         "w-8 h-10 sm:w-11 sm:h-[70px]",
         "rounded-xl border border-black/15 shadow-sm",
         "relative overflow-hidden",
-        "bg-gradient-to-br from-sky-700 via-blue-700 to-indigo-800",
+        "bg-gradient-to-br from-[#cc0033] via-[#b1002c] to-[#8f0024]",
       ].join(" ")}
     >
-      {/* vector-ish diagonal lines */}
+      {/* Rutgers-style repeating monogram pattern */}
       <div
-        className="absolute inset-0 opacity-35"
+        className="absolute inset-0 opacity-65"
         style={{
-          backgroundImage:
-            "repeating-linear-gradient(135deg, rgba(255,255,255,0.22) 0px, rgba(255,255,255,0.22) 1px, rgba(255,255,255,0) 6px, rgba(255,255,255,0) 12px)",
+          backgroundImage: `url("data:image/svg+xml,${monogramSvg}")`,
+          backgroundSize: "16px 16px",
         }}
       />
       {/* center glyph */}
       <div className="absolute inset-0 grid place-items-center">
-        <div className="w-7 h-7 rounded-full border border-white/40 bg-white/10 shadow-[0_0_12px_rgba(150,200,255,0.35)]" />
+        <div className="w-7 h-7 rounded-full border border-white/45 bg-white/10 grid place-items-center shadow-[0_0_12px_rgba(255,200,210,0.35)]">
+          <span className="text-white/95 text-sm font-black leading-none font-serif [text-shadow:0_1px_2px_rgba(0,0,0,0.35)]">R</span>
+        </div>
       </div>
       {/* inner frame */}
       <div className="absolute inset-[6px] rounded-lg border border-white/20" />
@@ -270,11 +279,13 @@ function CardFace({
   selected,
   onClick,
   disabled,
+  highlighted,
 }: {
   card: Card;
   selected?: boolean;
   onClick?: () => void;
   disabled?: boolean;
+  highlighted?: boolean;
 }) {
   const red = isRed(card.suit);
 
@@ -286,18 +297,20 @@ function CardFace({
       className={[
         "w-8 h-10 sm:w-11 sm:h-[70px]",
         "rounded-xl border shadow-sm",
-        "bg-white/90",
-        selected ? "border-white/70 ring-2 ring-sky-300/40" : "border-black/15",
-        disabled ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-[1px] hover:bg-white",
+        highlighted ? "bg-gradient-to-b from-[#ffffff] to-[#fffaf0]" : "bg-gradient-to-b from-[#fffef9] to-[#fff5df]",
+        selected ? "border-[#f0e2c6] ring-2 ring-[#cc0033]/45" : "border-[#e4d2ae]",
+        disabled
+          ? (highlighted ? "opacity-100 cursor-not-allowed shadow-[0_0_16px_rgba(255,248,220,0.5)]" : "opacity-70 cursor-not-allowed")
+          : "hover:-translate-y-[1px] hover:from-[#ffffff] hover:to-[#fff9ea]",
         "transition",
         "flex flex-col items-center justify-center gap-0.5",
       ].join(" ")}
       title={cardLabel(card)}
     >
-      <div className={["text-xs font-bold leading-none", red ? "text-red-600" : "text-zinc-900"].join(" ")}>
+      <div className={["text-xs font-bold leading-none", red ? "text-red-700" : "text-zinc-900"].join(" ")}>
         {card.rank}
       </div>
-      <div className={["text-base leading-none", red ? "text-red-600" : "text-zinc-900"].join(" ")}>
+      <div className={["text-base leading-none", red ? "text-red-700" : "text-zinc-900"].join(" ")}>
         {card.suit}
       </div>
     </button>
@@ -382,7 +395,7 @@ function ActionButton({
         "px-3 py-2 rounded-xl border text-[12px] leading-none tracking-[0.06em] uppercase",
         "transition hover:-translate-y-[1px] hover:opacity-95",
         variant === "primary"
-          ? "border-sky-200/40 bg-sky-600/20 text-sky-100"
+          ? "border-[#ffd2dc]/85 bg-[#cc0033]/70 text-[#fff5f7] shadow-[0_0_18px_rgba(204,0,51,0.5)] hover:bg-[#d10036]/80"
           : "border-white/15 bg-white/5 text-white/80",
         disabled ? "opacity-40 cursor-not-allowed hover:translate-y-0" : "",
       ].join(" ")}
@@ -584,16 +597,19 @@ export function GinRummyPanel() {
 
   const isYourDraw = game.phase === "your_draw";
   const isYourDiscard = game.phase === "your_discard";
+  const canDrawStock = isYourDraw && game.stock.length > 0;
+  const canTakeDiscard = isYourDraw && !!discardTop;
+  const canDiscard = isYourDiscard;
 
   return (
-    <div className="rounded-xl border border-black/10 bg-zinc-800 p-4 text-blue-100">
+    <div className="h-[690px] rounded-xl border border-black/10 bg-zinc-800 p-4 text-red-100 overflow-y-auto">
       {/* Header (match jeopardy vibe) */}
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="text-sm font-semibold">Gin Rummy</div>
-        <div className="text-xs text-blue-300">
-          You: <span className="font-semibold text-blue-200">{game.playerScore}</span> · CPU:{" "}
-          <span className="font-semibold text-blue-200">{game.cpuScore}</span>
-          <span className="ml-2 text-blue-300/80">
+        <div className="text-xs text-red-300">
+          You: <span className="font-semibold text-red-200">{game.playerScore}</span> · CPU:{" "}
+          <span className="font-semibold text-red-200">{game.cpuScore}</span>
+          <span className="ml-2 text-red-300/80">
             · Stock {game.stock.length} · Discard {discardTop ? cardLabel(discardTop) : "—"}
           </span>
         </div>
@@ -602,8 +618,8 @@ export function GinRummyPanel() {
       {/* Status line */}
       <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 mb-3">
         <div
-          className="text-[12px] text-blue-200"
-          style={{ textShadow: "0 0 4px rgba(120,190,255,0.25)" }}
+          className="min-h-[20px] flex items-center text-[12px] text-red-200"
+          style={{ textShadow: "0 0 4px rgba(255,120,145,0.25)" }}
         >
           {game.message}
         </div>
@@ -613,9 +629,9 @@ export function GinRummyPanel() {
       <div className="rounded-xl border border-white/10 bg-black/20 p-3">
         <div className="flex items-end justify-between mb-2">
           <div>
-            <div className="text-xs font-semibold text-blue-200">CPU</div>
-            <div className="text-[11px] text-blue-300/80">
-              Cards: <span className="font-semibold text-blue-200">{game.cpu.length}</span>
+            <div className="text-xs font-semibold text-red-200">CPU</div>
+            <div className="text-[11px] text-red-300/80">
+              Cards: <span className="font-semibold text-red-200">{game.cpu.length}</span>
               {game.phase === "hand_over" ? (
                 <span className="ml-2">· CPU deadwood was {cAnalysis.deadwood}</span>
               ) : (
@@ -625,7 +641,7 @@ export function GinRummyPanel() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {game.cpu.map((c, i) => (
             <CardBack key={`${c.id}-${i}`} title="CPU card (hidden)" />
           ))}
@@ -635,17 +651,17 @@ export function GinRummyPanel() {
       {/* Center: Stock + Discard */}
       <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-xs font-semibold text-blue-200">Table</div>
-          <div className="text-[11px] text-blue-300/80">
+          <div className="text-xs font-semibold text-red-200">Table</div>
+          <div className="text-[11px] text-red-300/80">
             {isYourDiscard ? "Select a card below to discard." : isYourDraw ? "Choose Stock or Discard." : " "}
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center gap-3">
           {/* Stock pile */}
           <div className="flex flex-col items-center gap-1">
             <CardBack title="Stock (face-down)" />
-            <div className="text-[11px] text-blue-300/80">Stock</div>
+            <div className="text-[11px] text-red-300/80">Stock</div>
           </div>
 
           {/* Discard pile top */}
@@ -654,17 +670,14 @@ export function GinRummyPanel() {
               <CardFace
                 card={discardTop}
                 disabled
+                highlighted
               />
             ) : (
               <div className="w-12 h-16 sm:w-14 sm:h-[76px] rounded-xl border border-white/10 bg-white/5" />
             )}
-            <div className="text-[11px] text-blue-300/80">Discard</div>
+            <div className="text-[11px] text-red-300/80">Discard</div>
           </div>
 
-          {/* Analysis pill (small, terminal-ish) */}
-          <div className="ml-auto hidden sm:block">
-            
-          </div>
         </div>
       </div>
 
@@ -672,19 +685,19 @@ export function GinRummyPanel() {
       <div className="mt-3 rounded-xl border border-white/10 bg-black/20 p-3">
         <div className="flex items-end justify-between mb-2">
           <div>
-            <div className="text-xs font-semibold text-blue-200">You</div>
-            <div className="text-[11px] text-blue-300/80">
-              Deadwood: <span className="font-semibold text-blue-200">{pAnalysis.deadwood}</span>
+            <div className="text-xs font-semibold text-red-200">You</div>
+            <div className="text-[11px] text-red-300/80">
+              Deadwood: <span className="font-semibold text-red-200">{pAnalysis.deadwood}</span>
               {pAnalysis.deadwood === 0 ? " (Gin!)" : ""}
-              <span className="ml-2 text-blue-300/70">· Click to select discard when prompted</span>
+              <span className="ml-2 text-red-300/70">· Click to select discard when prompted</span>
             </div>
           </div>
-          <div className="text-[11px] text-blue-300/80 sm:hidden">
-            Melds: <span className="font-semibold text-blue-200">{pAnalysis.melds.length}</span>
+          <div className="text-[11px] text-red-300/80 sm:hidden">
+            Melds: <span className="font-semibold text-red-200">{pAnalysis.melds.length}</span>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {game.player.map(c => (
             <CardFace
               key={c.id}
@@ -699,16 +712,16 @@ export function GinRummyPanel() {
         </div>
 
         {/* Melds line (kept, but more compact / terminal-y) */}
-        <div className="mt-2 text-[11px] text-blue-300/80">
+        <div className="mt-2 min-h-[20px] overflow-x-auto overflow-y-hidden whitespace-nowrap text-[11px] text-red-300/80">
           {pAnalysis.melds.length > 0 ? (
             <>
               Melds:{" "}
-              <span className="text-blue-200">
+              <span className="text-red-200">
                 {pAnalysis.melds.map(m => `[${m.kind}: ${m.cards.map(cardLabel).join(" ")}]`).join("  ")}
               </span>
             </>
           ) : (
-            <>Melds: <span className="text-blue-200">none</span></>
+            <>Melds: <span className="text-red-200">none</span></>
           )}
         </div>
       </div>
@@ -719,16 +732,16 @@ export function GinRummyPanel() {
           <div className="flex flex-wrap gap-2">
             <ActionButton
               onClick={drawFromStock}
-              disabled={!isYourDraw || game.stock.length === 0}
-              variant="primary"
+              disabled={!canDrawStock}
+              variant={canDrawStock ? "primary" : "default"}
             >
               Draw Stock
             </ActionButton>
 
             <ActionButton
               onClick={drawFromDiscard}
-              disabled={!isYourDraw || !discardTop}
-              variant="primary"
+              disabled={!canTakeDiscard}
+              variant={canTakeDiscard ? "primary" : "default"}
             >
               Take Discard
             </ActionButton>
@@ -736,6 +749,7 @@ export function GinRummyPanel() {
             <ActionButton
               onClick={discardSelected}
               disabled={!isYourDiscard || !selectedDiscard}
+              variant={canDiscard ? "primary" : "default"}
             >
               Discard
             </ActionButton>

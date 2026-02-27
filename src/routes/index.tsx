@@ -7,10 +7,11 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-type TabKey = "about" | "gallery" | "gin_rummy" | "jeopardy";
+type TabKey = "about" | "resume" | "gallery" | "gin_rummy" | "jeopardy";
 
 const TABS: Array<{ key: TabKey; label: string }> = [
   { key: "about", label: "About Me" },
+  { key: "resume", label: "Resumé" },
   { key: "gallery", label: "Gallery" },
   { key: "gin_rummy", label: "Gin Rummy" },
   { key: "jeopardy", label: "Jeopardy" },
@@ -23,7 +24,7 @@ function Home() {
   return (
     <div className="min-h-dvh flex items-start justify-center pt-16 px-4 bg-zinc-50">
       <div className="w-full max-w-[680px] rounded-[22px] overflow-hidden border border-black/10 bg-white/80 backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.22)]">
-        <div className="flex gap-2 px-4 pt-4 bg-white/70 border-b border-black/10" role="tablist" aria-label="Console tabs">
+        <div className="flex justify-center gap-2 px-4 pt-4 bg-white/70 border-b border-black/10" role="tablist" aria-label="Console tabs">
           {TABS.map((t) => {
             const isActive = t.key === active;
             return (
@@ -36,7 +37,7 @@ function Home() {
                 className={[
                   "select-none px-4 py-2 rounded-t-[14px]",
                   "border border-black/15 border-b-0",
-                  "text-[12px] text-blue-600 leading-none tracking-[0.08em] font-bold uppercase",
+                  "text-[12px] text-[#cc0033] leading-none tracking-[0.08em] font-bold uppercase",
                   "transition hover:-translate-y-[1px] hover:opacity-95",
                   isActive
                     ? "bg-white/95 opacity-100 border-black/20"
@@ -54,6 +55,12 @@ function Home() {
             <section className="space-y-2">
               <h2 className="text-[18px] font-bold tracking-tight">A. D. Myers</h2>
               <p className="text-black/70 text-[14px] leading-relaxed">Placeholder: about me goes here.</p>
+            </section>
+          )}
+          {active === "resume" && (
+            <section className="space-y-2">
+              <h2 className="text-[18px] font-bold tracking-tight">Resumé</h2>
+              <p className="text-black/70 text-[14px] leading-relaxed">Placeholder: resume content goes here.</p>
             </section>
           )}
           {active === "gallery" && (
