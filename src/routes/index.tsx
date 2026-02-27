@@ -290,7 +290,7 @@ function Home() {
                 <h2 className="text-[18px] font-bold tracking-tight">SHOTS!</h2>
                 <video
                   ref={shotsRef}
-                  src="/images/shots.MOV"
+                  src="/images/shots-small.m4v"
                   muted
                   playsInline
                   preload="metadata"
