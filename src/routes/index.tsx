@@ -179,7 +179,7 @@ function Home() {
               <section className="space-y-3">
                 <h2 className="text-[22px] font-black tracking-tight text-[#cc0033]">"What's up, Drü Crew?"</h2>
                 <div className="grid gap-4 md:grid-cols-[1fr_auto]">
-                  <div className="space-y-3 text-black/75 text-[14px] leading-relaxed">
+                  <div className="space-y-3 text-black/75 text-[13px] leading-relaxed">
                     <p>Hi, my name is Andrew; welcome to my website! It's nice to get to know you.</p>
                     <p>
                       Right now, I work in operations at an end-to-end jewelry manufacturer called Xomox Jewelry on 40th street,
