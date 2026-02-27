@@ -54,11 +54,18 @@ export function RetroPopups() {
   React.useEffect(() => {
     let active = true;
     const timers: number[] = [];
+    const isMobile = window.innerWidth < 640;
+    const gifs = isMobile
+      ? AD_GIFS.filter((gif) => !gif.endsWith("/ad1.gif") && !gif.endsWith("/ad6.gif"))
+      : AD_GIFS;
 
-    AD_GIFS.forEach((gif, index) => {
+    gifs.forEach((gif, index) => {
       const t = window.setTimeout(async () => {
-        const { width, height } = await loadImageSize(gif);
+        const { width: rawWidth, height: rawHeight } = await loadImageSize(gif);
         if (!active) return;
+        const maxPopupWidth = Math.max(120, window.innerWidth - 16);
+        const width = Math.min(rawWidth, maxPopupWidth);
+        const height = Math.round((rawHeight / rawWidth) * width);
 
         const popupChromeHeight = 30;
         const popupTotalHeight = height + popupChromeHeight;
