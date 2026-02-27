@@ -381,6 +381,7 @@ export function JeopardyTerminal() {
 
   const [timer, setTimer] = React.useState<number | null>(null);
   const timerRef = React.useRef<number | null>(null);
+  const [loadingDataset, setLoadingDataset] = React.useState(false);
 
   const append = React.useCallback((text: string, dim = false) => {
     setLines((prev) => [...prev, { id: nowId(), text, dim }]);
@@ -394,33 +395,34 @@ export function JeopardyTerminal() {
     setTimeout(() => inputRef.current?.focus(), 0);
   }, []);
 
-// Auto scroll
-React.useEffect(() => {
-  const el = termRef.current;
-  if (!el) return;
-  el.scrollTop = el.scrollHeight;
-}, [lines.length]);
+  // Auto scroll
+  React.useEffect(() => {
+    const el = termRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [lines.length]);
 
-  // Auto-load TSV from /public at startup (optional)
-React.useEffect(() => {
-  (async () => {
+  const loadDataset = React.useCallback(async () => {
+    if (loadingDataset) return;
+    setLoadingDataset(true);
+    append("Loading clue dataset from /data/combined_season1-41.tsv ...", true);
     try {
-      // IMPORTANT: this path is from /public
       const res = await fetch("/data/combined_season1-41.tsv");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
       const parsed = parseTSV(text);
       if (parsed.length) {
         setClues(parsed);
+        append(`Loaded ${parsed.length.toLocaleString()} clues.`, true);
       } else {
-        append("Auto-load: TSV fetched but parsed 0 clues (check headers).", true);
+        append("Load failed: TSV fetched but parsed 0 clues (check headers).", true);
       }
-    } catch (e) {
-      append("Auto-load: couldn't fetch /data/combined_season1-41.tsv (check public path).", true);
+    } catch {
+      append("Load failed: couldn't fetch /data/combined_season1-41.tsv.", true);
+    } finally {
+      setLoadingDataset(false);
     }
-  })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+  }, [append, loadingDataset]);
 
   React.useEffect(() => {
     focusInput();
@@ -627,12 +629,18 @@ if (isDD) {
     // global commands
     if (cmd.toLowerCase() === "help") {
       append("Commands:");
+      append("  load         — load full clue dataset (74MB)");
       append("  start        — start round 1");
       append("  r            — new board (current round)");
       append("  buzz         — buzz in during buzz window");
       append("  next         — start Double Jeopardy (after round 1)");
       append("  final        — Final Jeopardy (after round 2)");
       append("  q            — quit");
+      return;
+    }
+
+    if (cmd.toLowerCase() === "load") {
+      void loadDataset();
       return;
     }
 
