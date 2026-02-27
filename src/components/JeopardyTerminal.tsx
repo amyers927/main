@@ -381,7 +381,7 @@ export function JeopardyTerminal() {
 
   const [timer, setTimer] = React.useState<number | null>(null);
   const timerRef = React.useRef<number | null>(null);
-  const [loadingDataset, setLoadingDataset] = React.useState(false);
+  const loadingDatasetRef = React.useRef(false);
 
   const append = React.useCallback((text: string, dim = false) => {
     setLines((prev) => [...prev, { id: nowId(), text, dim }]);
@@ -403,8 +403,8 @@ export function JeopardyTerminal() {
   }, [lines.length]);
 
   const loadDataset = React.useCallback(async () => {
-    if (loadingDataset) return;
-    setLoadingDataset(true);
+    if (loadingDatasetRef.current) return;
+    loadingDatasetRef.current = true;
     append("Loading clue dataset from /data/combined_season1-41.tsv ...", true);
     try {
       const res = await fetch("/data/combined_season1-41.tsv");
@@ -420,9 +420,14 @@ export function JeopardyTerminal() {
     } catch {
       append("Load failed: couldn't fetch /data/combined_season1-41.tsv.", true);
     } finally {
-      setLoadingDataset(false);
+      loadingDatasetRef.current = false;
     }
-  }, [append, loadingDataset]);
+  }, [append]);
+
+  // Auto-load TSV from /public on startup
+  React.useEffect(() => {
+    void loadDataset();
+  }, [loadDataset]);
 
   React.useEffect(() => {
     focusInput();
@@ -629,7 +634,7 @@ if (isDD) {
     // global commands
     if (cmd.toLowerCase() === "help") {
       append("Commands:");
-      append("  load         — load full clue dataset (74MB)");
+      append("  load         — reload clue dataset");
       append("  start        — start round 1");
       append("  r            — new board (current round)");
       append("  buzz         — buzz in during buzz window");
