@@ -63,8 +63,8 @@ export function RetroPopups() {
       const t = window.setTimeout(async () => {
         const { width: rawWidth, height: rawHeight } = await loadImageSize(gif);
         if (!active) return;
-        const maxPopupWidth = Math.max(120, window.innerWidth - 16);
-        const width = Math.min(rawWidth, maxPopupWidth);
+        const maxPopupWidth = Math.max(150, window.innerWidth - 16);
+        const width = Math.max(150, Math.min(rawWidth, maxPopupWidth));
         const height = Math.round((rawHeight / rawWidth) * width);
 
         const popupChromeHeight = 30;
