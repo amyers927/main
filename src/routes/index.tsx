@@ -183,9 +183,42 @@ function Home() {
                   alt="Portrait of A. D. Myers"
                   className="w-full max-w-[280px] rounded-xl border border-black/10 shadow-sm opacity-100"
                 />
-                <p className="text-black/70 text-[14px] leading-relaxed">
-                  About me text coming soon.
-                </p>
+                <div className="space-y-3 text-black/75 text-[14px] leading-relaxed">
+                  <p>Hi, my name is Andrew; welcome to my website! It's nice to get to know you.</p>
+                  <p>
+                    Right now, I work in operations at an end-to-end jewelry manufacturer called Xomox Jewelry on 40th street,
+                    where I build systems, autonomous and not, to track workflows and manage inventories across multiple
+                    departments. Before this, I worked at Liv Breads (bakery) in Millburn, NJ; I miss their pastries all the
+                    time!
+                  </p>
+                  <p>
+                    In my free time, I enjoy filling out the New York Times crossword (Friday and Saturday only, please!),
+                    reading Robert Caro&apos;s &quot;The Years of Lyndon Johnson&quot; series, and relaxing at the Jersey Shore with my best friends.
+                    The background image of this website is my lovely girlfriend, Hank, whose work can be seen at{" "}
+                    <a
+                      href="https://hanky.info"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline font-semibold text-[#7a001f]"
+                    >
+                      hanky.info
+                    </a>
+                    .
+                  </p>
+                  <p>
+                    If you have any questions, don&apos;t hesitate to email me at{" "}
+                    <a
+                      href="mailto:andrew@albeirutiholdings.com"
+                      className="underline font-semibold text-[#7a001f]"
+                    >
+                      andrew@albeirutiholdings.com
+                    </a>
+                    ; I&apos;d love to connect! While you&apos;re here, give my Rutgers-themed Gin Rummy a shot, or play a
+                    terminal-based game of Jeopardy and see how smart you are. Hopefully soon I can add some high scores.
+                  </p>
+                  <p>All the best,</p>
+                  <p className="font-semibold">A. D. Myers</p>
+                </div>
               </section>
             )}
             {active === "resume" && (
