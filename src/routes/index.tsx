@@ -16,14 +16,15 @@ const JeopardyTerminal = React.lazy(async () => {
   return { default: mod.JeopardyTerminal };
 });
 
-type TabKey = "about" | "resume" | "gallery" | "gin_rummy" | "jeopardy";
+type TabKey = "about" | "resume" | "gallery" | "shots" | "gin_rummy" | "jeopardy";
 
-const TABS: Array<{ key: TabKey; label: string }> = [
-  { key: "about", label: "About Me" },
-  { key: "resume", label: "Resumé" },
-  { key: "gallery", label: "Gallery" },
-  { key: "gin_rummy", label: "Gin Rummy" },
-  { key: "jeopardy", label: "Jeopardy" },
+const TABS: Array<{ key: TabKey; label: string; mobileLabel: string }> = [
+  { key: "about", label: "About Me", mobileLabel: "About" },
+  { key: "resume", label: "Resumé", mobileLabel: "Res" },
+  { key: "gallery", label: "Gallery", mobileLabel: "Gal" },
+  { key: "shots", label: "SHOTS!", mobileLabel: "Shots" },
+  { key: "gin_rummy", label: "Gin Rummy", mobileLabel: "Gin" },
+  { key: "jeopardy", label: "Jeopardy", mobileLabel: "Jep" },
 ];
 
 type ResumeRole = {
@@ -134,6 +135,14 @@ function ResumeTextList({ items }: { items: string[] }) {
 
 function Home() {
   const [active, setActive] = React.useState<TabKey>("about");
+  const shotsRef = React.useRef<HTMLVideoElement | null>(null);
+
+  function playShotVideo() {
+    const video = shotsRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    void video.play();
+  }
 
   return (
     <>
@@ -160,16 +169,17 @@ function Home() {
                   aria-selected={isActive}
                   onClick={() => setActive(t.key)}
                   className={[
-                    "select-none px-1.5 sm:px-4 py-1.5 sm:py-2 rounded-t-[10px] sm:rounded-t-[14px]",
+                    "select-none px-1 sm:px-4 py-1.5 sm:py-2 rounded-t-[10px] sm:rounded-t-[14px]",
                     "border border-black/15 border-b-0",
-                    "text-[9px] sm:text-[12px] text-[#cc0033] leading-none tracking-[0.03em] sm:tracking-[0.08em] font-bold uppercase whitespace-nowrap",
+                    "text-[8px] sm:text-[12px] text-[#cc0033] leading-none tracking-[0.02em] sm:tracking-[0.08em] font-bold uppercase whitespace-nowrap",
                     "transition hover:-translate-y-[1px] hover:opacity-95",
                     isActive
                       ? "bg-white/95 opacity-100 border-black/20"
                       : "bg-neutral-200/80 opacity-75",
                   ].join(" ")}
                 >
-                  {t.label}
+                  <span className="sm:hidden">{t.mobileLabel}</span>
+                  <span className="hidden sm:inline">{t.label}</span>
                 </button>
               );
             })}
@@ -273,6 +283,28 @@ function Home() {
               <section className="space-y-2">
                 <h2 className="text-[18px] font-bold tracking-tight">Gallery</h2>
                 <p className="text-black/70 text-[14px] leading-relaxed">Placeholder: coming soon.</p>
+              </section>
+            )}
+            {active === "shots" && (
+              <section className="space-y-3 flex flex-col items-center text-center">
+                <h2 className="text-[18px] font-bold tracking-tight">SHOTS!</h2>
+                <video
+                  ref={shotsRef}
+                  src="/images/shots.MOV"
+                  muted
+                  playsInline
+                  preload="metadata"
+                  disablePictureInPicture
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="w-full max-w-[170px] rounded-xl border border-black/10 shadow-sm grayscale pointer-events-none select-none"
+                />
+                <button
+                  type="button"
+                  onClick={playShotVideo}
+                  className="px-3 py-2 rounded-xl border text-[12px] leading-none tracking-[0.06em] uppercase transition hover:-translate-y-[1px] hover:opacity-95 border-[#ffd2dc]/85 bg-[#cc0033]/70 text-[#fff5f7] shadow-[0_0_18px_rgba(204,0,51,0.5)] hover:bg-[#d10036]/80"
+                >
+                  Let&apos;s take a shot!
+                </button>
               </section>
             )}
             {active === "gin_rummy" && (
