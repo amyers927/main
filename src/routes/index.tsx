@@ -40,33 +40,15 @@ const RESUME_ROLES: ResumeRole[] = [
   },
   {
     company: "Liv Breads",
-    title: "Floor Manager",
+    title: "Floor & Store Manager",
     dates: "Feb 2019 - Aug 2023",
     location: "Millburn, NJ",
   },
   {
     company: "Black Snow Capital",
     title: "Investment Associate",
-    dates: "Jun 2018 - Oct 2018",
+    dates: "Sep 2017 - Oct 2018",
     location: "New York City Metro Area",
-  },
-  {
-    company: "Black Snow Capital",
-    title: "Investment Associate Intern",
-    dates: "Sep 2017 - Jun 2018",
-    location: "New York City Metro Area",
-  },
-  {
-    company: "DGL Group LLC",
-    title: "Toy Production Intern",
-    dates: "Jun 2016 - Aug 2016",
-    location: "Edison, NJ",
-  },
-  {
-    company: "LikeWear",
-    title: "Graphic Designer / Website Manager",
-    dates: "Apr 2012 - Jan 2016",
-    location: "Livingston, NJ",
   },
 ];
 
@@ -74,7 +56,7 @@ const VOLUNTEERING: ResumeRole[] = [
   {
     company: "United Nations",
     title: "Graphic Designer",
-    dates: "2012 - Present",
+    dates: "2012",
     location: "Disaster and Humanitarian Relief",
   },
 ];
@@ -96,6 +78,51 @@ const EDUCATION = [
 const LANGUAGES = [
   "Conversational French",
 ];
+
+function ResumeSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-black/10 bg-white/90 p-4">
+      <h3 className="text-[12px] uppercase tracking-[0.12em] font-extrabold text-[#cc0033]">{title}</h3>
+      {children}
+    </div>
+  );
+}
+
+function ResumeRoleList({ roles }: { roles: ResumeRole[] }) {
+  return (
+    <ul className="mt-3 divide-y divide-black/10">
+      {roles.map((role) => (
+        <li
+          key={`${role.company}-${role.title}`}
+          className="py-3 first:pt-0 last:pb-0"
+        >
+          <p className="text-[15px] font-black text-black/90">{role.company}</p>
+          <p className="text-[13px] font-semibold text-black/70">{role.title}</p>
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#b1002c]">{role.dates}</p>
+          <p className="text-[12px] text-black/65">{role.location}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function ResumeTextList({ items }: { items: string[] }) {
+  return (
+    <ul className="mt-3 divide-y divide-black/10">
+      {items.map((item) => (
+        <li key={item} className="py-2 first:pt-0 last:pb-0 text-[13px] text-black/80">
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function Home() {
   const [active, setActive] = React.useState<TabKey>("about");
@@ -141,105 +168,50 @@ function Home() {
 
           <div className="p-6">
             {active === "about" && (
-              <section className="space-y-2">
-                <h2 className="text-[18px] font-bold tracking-tight">A. D. Myers</h2>
-                <p className="text-black/70 text-[14px] leading-relaxed">Placeholder: about me goes here.</p>
+              <section className="space-y-3">
+                <h2 className="text-[22px] font-black tracking-tight text-[#cc0033]">"What's up, Drü Crew?"</h2>
+                <img
+                  src="/images/me2.jpg"
+                  alt="Portrait of A. D. Myers"
+                  className="w-full max-w-[280px] rounded-xl border border-black/10 shadow-sm opacity-100"
+                />
+                <p className="text-black/70 text-[14px] leading-relaxed">
+                  About me text coming soon.
+                </p>
               </section>
             )}
             {active === "resume" && (
               <section className="space-y-4">
-                <div className="rounded-2xl border border-[#cc0033]/20 bg-gradient-to-br from-white via-[#fff7f9] to-[#ffe9ef] p-5 shadow-[0_10px_30px_rgba(204,0,51,0.12)]">
+                <section className="rounded-2xl border border-[#cc0033]/20 bg-gradient-to-br from-white via-[#fff7f9] to-[#ffe9ef] p-5 shadow-[0_10px_30px_rgba(204,0,51,0.12)]">
                   <h2 className="text-[22px] font-black tracking-tight text-[#7a001f]">A. D. Myers</h2>
                   <p className="text-[12px] uppercase tracking-[0.12em] text-[#b1002c] font-bold">Operations-focused experience</p>
-                </div>
+                </section>
 
-                <div className="rounded-2xl border border-black/10 bg-white/90 p-4">
-                  <h3 className="text-[12px] uppercase tracking-[0.12em] font-extrabold text-[#cc0033]">Experience</h3>
-                  <div className="mt-3 space-y-3">
-                    {RESUME_ROLES.map((role) => (
-                      <article key={`${role.company}-${role.title}`} className="rounded-xl border border-black/10 bg-white p-3">
-                        <div className="grid gap-2 sm:grid-cols-[1.6fr_1fr]">
-                          <div>
-                            <p className="text-[15px] font-black text-black/90">{role.company}</p>
-                            <p className="text-[13px] font-semibold text-black/70">{role.title}</p>
-                          </div>
-                          <div className="sm:text-right">
-                            <p className="text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#b1002c]">{role.dates}</p>
-                            <p className="text-[12px] text-black/65">{role.location}</p>
-                          </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
+                <ResumeSection title="Experience">
+                  <ResumeRoleList roles={RESUME_ROLES} />
+                </ResumeSection>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <ResumeSection title="Certifications">
+                    <ResumeTextList items={CERTIFICATIONS} />
+                  </ResumeSection>
+                  <ResumeSection title="Accolades">
+                    <ResumeTextList items={ACCOLADES} />
+                  </ResumeSection>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-black/10 bg-white/90 p-4">
-                    <h3 className="text-[12px] uppercase tracking-[0.12em] font-extrabold text-[#cc0033]">Certifications</h3>
-                    <ul className="mt-3 space-y-2">
-                      {CERTIFICATIONS.map((item) => (
-                        <li key={item} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-[13px] text-black/80">
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="rounded-2xl border border-black/10 bg-white/90 p-4">
-                    <h3 className="text-[12px] uppercase tracking-[0.12em] font-extrabold text-[#cc0033]">Accolades</h3>
-                    <ul className="mt-3 space-y-2">
-                      {ACCOLADES.map((item) => (
-                        <li key={item} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-[13px] text-black/80">
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <ResumeSection title="Education">
+                    <ResumeTextList items={EDUCATION} />
+                  </ResumeSection>
+                  <ResumeSection title="Languages">
+                    <ResumeTextList items={LANGUAGES} />
+                  </ResumeSection>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-black/10 bg-white/90 p-4">
-                    <h3 className="text-[12px] uppercase tracking-[0.12em] font-extrabold text-[#cc0033]">Education</h3>
-                    <ul className="mt-3 space-y-2">
-                      {EDUCATION.map((item) => (
-                        <li key={item} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-[13px] text-black/80">
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="rounded-2xl border border-black/10 bg-white/90 p-4">
-                    <h3 className="text-[12px] uppercase tracking-[0.12em] font-extrabold text-[#cc0033]">Languages</h3>
-                    <ul className="mt-3 space-y-2">
-                      {LANGUAGES.map((item) => (
-                        <li key={item} className="rounded-lg border border-black/10 bg-white px-3 py-2 text-[13px] text-black/80">
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-black/10 bg-white/90 p-4">
-                  <h3 className="text-[12px] uppercase tracking-[0.12em] font-extrabold text-[#cc0033]">Volunteering</h3>
-                  <div className="mt-3 space-y-3">
-                    {VOLUNTEERING.map((role) => (
-                      <article key={`${role.company}-${role.title}`} className="rounded-xl border border-black/10 bg-white p-3">
-                        <div className="grid gap-2 sm:grid-cols-[1.4fr_1fr]">
-                          <div>
-                            <p className="text-[15px] font-black text-black/90">{role.company}</p>
-                            <p className="text-[13px] font-semibold text-black/70">{role.title}</p>
-                          </div>
-                          <div className="sm:text-right">
-                            <p className="text-[12px] font-bold text-[#b1002c]">{role.dates}</p>
-                            <p className="text-[12px] text-black/65">{role.location}</p>
-                          </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                </div>
+                <ResumeSection title="Volunteering">
+                  <ResumeRoleList roles={VOLUNTEERING} />
+                </ResumeSection>
               </section>
             )}
             {active === "gallery" && (
