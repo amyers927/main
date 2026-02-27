@@ -148,7 +148,8 @@ function Home() {
         }}
       >
         <div className="w-full max-w-[680px] rounded-[22px] overflow-hidden border border-black/10 bg-white/80 backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.22)]">
-          <div className="flex flex-wrap justify-center gap-1 sm:gap-2 px-2 sm:px-4 pt-3 sm:pt-4 bg-white/70 border-b border-black/10" role="tablist" aria-label="Console tabs">
+          <div className="overflow-x-auto px-2 sm:px-4 pt-2 sm:pt-4 bg-white/70 border-b border-black/10">
+            <div className="flex w-max min-w-full justify-start sm:justify-center gap-1 sm:gap-2" role="tablist" aria-label="Console tabs">
             {TABS.map((t) => {
               const isActive = t.key === active;
               return (
@@ -159,9 +160,9 @@ function Home() {
                   aria-selected={isActive}
                   onClick={() => setActive(t.key)}
                   className={[
-                    "select-none px-2 sm:px-4 py-2 rounded-t-[12px] sm:rounded-t-[14px]",
+                    "select-none px-1.5 sm:px-4 py-1.5 sm:py-2 rounded-t-[10px] sm:rounded-t-[14px]",
                     "border border-black/15 border-b-0",
-                    "text-[10px] sm:text-[12px] text-[#cc0033] leading-none tracking-[0.06em] sm:tracking-[0.08em] font-bold uppercase",
+                    "text-[9px] sm:text-[12px] text-[#cc0033] leading-none tracking-[0.03em] sm:tracking-[0.08em] font-bold uppercase whitespace-nowrap",
                     "transition hover:-translate-y-[1px] hover:opacity-95",
                     isActive
                       ? "bg-white/95 opacity-100 border-black/20"
@@ -172,6 +173,7 @@ function Home() {
                 </button>
               );
             })}
+            </div>
           </div>
 
           <div className="p-6">
