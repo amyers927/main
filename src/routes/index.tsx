@@ -1,11 +1,19 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { GinRummyPanel } from "../components/GinRummyPanel";
-import { JeopardyTerminal } from "../components/JeopardyTerminal";
 import { RetroPopups } from "../components/RetroPopups";
 
 export const Route = createFileRoute("/")({
   component: Home,
+});
+
+const GinRummyPanel = React.lazy(async () => {
+  const mod = await import("../components/GinRummyPanel");
+  return { default: mod.GinRummyPanel };
+});
+
+const JeopardyTerminal = React.lazy(async () => {
+  const mod = await import("../components/JeopardyTerminal");
+  return { default: mod.JeopardyTerminal };
 });
 
 type TabKey = "about" | "resume" | "gallery" | "gin_rummy" | "jeopardy";
@@ -223,13 +231,21 @@ function Home() {
             {active === "gin_rummy" && (
               <section role="tabpanel" className="space-y-2">
                 <h2 className="text-[18px] font-bold tracking-tight">Gin Rummy</h2>
-                <GinRummyPanel />
+                <React.Suspense
+                  fallback={<p className="text-[13px] text-black/60">Loading Gin Rummy...</p>}
+                >
+                  <GinRummyPanel />
+                </React.Suspense>
               </section>
             )}
             {active === "jeopardy" && (
               <section className="space-y-2">
                 <h2 className="text-[18px] font-bold tracking-tight">Jeopardy</h2>
-                <JeopardyTerminal />
+                <React.Suspense
+                  fallback={<p className="text-[13px] text-black/60">Loading Jeopardy...</p>}
+                >
+                  <JeopardyTerminal />
+                </React.Suspense>
               </section>
             )}
           </div>
