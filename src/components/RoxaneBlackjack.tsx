@@ -115,12 +115,12 @@ const CHIP_DENOMS = [
 ];
 
 const SEAT_POSITIONS: Record<number, { left: string; top: string }> = {
-  0: { left: "12%", top: "60%" },
-  1: { left: "28%", top: "63%" },
-  2: { left: "45%", top: "65%" },
-  3: { left: "62%", top: "63%" },
-  4: { left: "78%", top: "60%" },
-  5: { left: "90%", top: "57%" },
+  0: { left: "8%", top: "54%" },
+  1: { left: "23%", top: "63%" },
+  2: { left: "45%", top: "76%" },
+  3: { left: "67%", top: "63%" },
+  4: { left: "82%", top: "54%" },
+  5: { left: "94%", top: "46%" },
 };
 
 const FELT_TEXTURE = encodeURIComponent(
@@ -456,7 +456,6 @@ export function RoxaneBlackjack() {
   const [playerBet, setPlayerBet] = React.useState(TABLE_MIN);
   const [phase, setPhase] = React.useState<Phase>("betting");
   const [message, setMessage] = React.useState("Welcome to ROXANE.");
-  const [bookText, setBookText] = React.useState("");
   const [dialogue, setDialogue] = React.useState("");
   const [occupants, setOccupants] = React.useState<Occupant[]>([]);
   const [roundSeats, setRoundSeats] = React.useState<RoundSeat[]>([]);
@@ -559,7 +558,6 @@ export function RoxaneBlackjack() {
     setPlayerHands([]);
     setTurnQueue([]);
     setDialogue("");
-    setBookText("");
     setMessage("Place your chips, then deal.");
   }
 
@@ -621,7 +619,6 @@ export function RoxaneBlackjack() {
     setHideDealerHole(true);
     setTurnQueue([]);
     setDialogue("");
-    setBookText("");
     setMessage("OG mode loaded. Place your chips, then deal.");
   }
 
@@ -820,7 +817,6 @@ export function RoxaneBlackjack() {
     setTurnQueue(queue);
     setPhase("in_round");
     setDialogue("");
-    setBookText("");
 
     if (playerSeat && playerSeat.blackjack) {
       setMessage("Blackjack for you. Click Next Card to run the table.");
@@ -993,6 +989,8 @@ export function RoxaneBlackjack() {
       hand.cards.push(drawn);
       if (!nextCutCardSeen && workingShoe.length <= CUT_CARD_THRESHOLD) nextCutCardSeen = true;
     }
+    hand.holeCardIndex = hand.cards.length - 1;
+    hand.holeCardRevealed = false;
     const total = handValue(hand.cards);
     hand.stood = true;
     hand.busted = total > 21;
@@ -1061,7 +1059,6 @@ export function RoxaneBlackjack() {
     setDealerHand([]);
     setHideDealerHole(true);
     setTurnQueue([]);
-    setBookText("");
     setDialogue("");
     if (needsReshuffle) {
       setShoe(makeShoe(SHOE_DECKS));
@@ -1086,7 +1083,6 @@ export function RoxaneBlackjack() {
     setHideDealerHole(true);
     setTurnQueue([]);
     setDialogue("");
-    setBookText("");
     setMessage("ATM run complete. Fresh bankroll and fresh shoe.");
   }
 
@@ -1095,7 +1091,8 @@ export function RoxaneBlackjack() {
     if (phase !== "in_round" || activeIdx < 0) return;
     const activeHand = playerHands[activeIdx];
     const dealerUp = dealerHand[0];
-    setBookText(getBookAdvice(activeHand?.cards ?? [], dealerUp));
+    const advice = getBookAdvice(activeHand?.cards ?? [], dealerUp);
+    setDialogue(`Roxane: ${advice}`);
   }
 
   const canAddSeat = occupants.length < seatCapacity;
@@ -1164,10 +1161,6 @@ export function RoxaneBlackjack() {
               {dialogue}
             </div>
           )}
-          <div className="absolute left-1/2 top-[40%] z-10 w-[min(80%,430px)] -translate-x-1/2 rounded-lg border border-white/30 bg-black/25 px-3 py-2 text-center text-[12px] font-semibold text-white/95">
-            {message}
-            {needsReshuffle ? " Scarlet cut card is out. Shoe will reshuffle after this hand." : ""}
-          </div>
 
           <button
             type="button"
@@ -1209,7 +1202,15 @@ export function RoxaneBlackjack() {
                     {seat.kind === "player" && playerHands.length > 0 ? (
                       <div className="mt-0.5 space-y-1">
                         {playerHands.map((hand, handIdx) => (
-                          <div key={`${seat.id}-h${handIdx}`} className="flex items-center justify-center gap-2">
+                          <div
+                            key={`${seat.id}-h${handIdx}`}
+                            className={[
+                              "flex items-center justify-center gap-2 rounded-md px-1 py-0.5 transition",
+                              isPlayerTurn && activePlayerHandIdx === handIdx
+                                ? "ring-2 ring-white/90 shadow-[0_0_16px_rgba(255,255,255,0.55)] bg-white/10"
+                                : "",
+                            ].join(" ")}
+                          >
                             <div className="flex min-h-[40px] justify-center gap-1">
                               {hand.cards.map((card, cardIdx) => (
                                 <CardFace
@@ -1221,10 +1222,7 @@ export function RoxaneBlackjack() {
                               ))}
                             </div>
                             <ChipStack amount={hand.bet} />
-                            <p className="text-[10px] font-bold text-white/92">
-                              H{handIdx + 1} {handValue(hand.cards)}
-                              {hand.result ? ` • ${hand.result}` : ""}
-                            </p>
+                            <p className="text-[10px] font-bold text-white/92">${hand.bet.toFixed(2)}</p>
                           </div>
                         ))}
                       </div>
@@ -1239,10 +1237,6 @@ export function RoxaneBlackjack() {
                           </div>
                           <ChipStack amount={seat.bet} />
                         </div>
-                        <p className="mt-0.5 text-[10px] font-bold text-white/92">
-                          {seat.hand.length > 0 ? `${handValue(seat.hand)} • ${seat.bet.toFixed(2)}` : "Waiting"}
-                          {seat.result ? ` • ${seat.result}` : ""}
-                        </p>
                       </>
                     )}
                   </div>
@@ -1458,12 +1452,10 @@ export function RoxaneBlackjack() {
         </div>
       </div>
 
-      {bookText && (
-        <div className="rounded-xl border border-[#cc0033]/20 bg-[#fff7fa] p-3 text-[12px] text-black/80">
-          <p className="font-semibold text-[#7a001f]">Book says:</p>
-          <p>{bookText}</p>
-        </div>
-      )}
+      <p className="sr-only" aria-live="polite">
+        {message}
+        {needsReshuffle ? " Scarlet cut card is out. Shoe will reshuffle after this hand." : ""}
+      </p>
 
     </section>
   );
