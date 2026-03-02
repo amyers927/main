@@ -115,12 +115,12 @@ const CHIP_DENOMS = [
 ];
 
 const SEAT_POSITIONS: Record<number, { left: string; top: string }> = {
-  0: { left: "8%", top: "54%" },
-  1: { left: "23%", top: "63%" },
-  2: { left: "45%", top: "76%" },
-  3: { left: "67%", top: "63%" },
-  4: { left: "82%", top: "54%" },
-  5: { left: "94%", top: "46%" },
+  0: { left: "8%", top: "50%" },
+  1: { left: "23%", top: "58%" },
+  2: { left: "45%", top: "66%" },
+  3: { left: "67%", top: "58%" },
+  4: { left: "82%", top: "50%" },
+  5: { left: "94%", top: "43%" },
 };
 
 const FELT_TEXTURE = encodeURIComponent(
@@ -454,6 +454,7 @@ export function RoxaneBlackjack() {
   const [phase, setPhase] = React.useState<Phase>("betting");
   const [message, setMessage] = React.useState("Welcome to ROXANE.");
   const [dialogue, setDialogue] = React.useState("");
+  const [brokeOutcome, setBrokeOutcome] = React.useState("");
   const [occupants, setOccupants] = React.useState<Occupant[]>([]);
   const [roundSeats, setRoundSeats] = React.useState<RoundSeat[]>([]);
   const [playerHands, setPlayerHands] = React.useState<PlayerHandState[]>([]);
@@ -555,6 +556,7 @@ export function RoxaneBlackjack() {
     setPlayerHands([]);
     setTurnQueue([]);
     setDialogue("");
+    setBrokeOutcome("");
     setPlayerBet(0);
     setMessage("Place your chips, then deal.");
   }
@@ -617,6 +619,7 @@ export function RoxaneBlackjack() {
     setHideDealerHole(true);
     setTurnQueue([]);
     setDialogue("");
+    setBrokeOutcome("");
     setMessage("OG mode loaded. Place your chips, then deal.");
   }
 
@@ -725,6 +728,7 @@ export function RoxaneBlackjack() {
     } else {
       setDialogue("");
     }
+    setBrokeOutcome("");
 
     setBankroll((prev) => Number(Math.max(0, prev + bankrollDelta).toFixed(2)));
     setRoundSeats(nextSeats);
@@ -1058,6 +1062,7 @@ export function RoxaneBlackjack() {
     setHideDealerHole(true);
     setTurnQueue([]);
     setDialogue("");
+    setBrokeOutcome("");
     setPlayerBet(0);
     if (needsReshuffle) {
       setShoe(makeShoe(SHOE_DECKS));
@@ -1087,7 +1092,29 @@ export function RoxaneBlackjack() {
     setHideDealerHole(true);
     setTurnQueue([]);
     setDialogue("");
+    setBrokeOutcome("");
     setMessage("Welcome to ROXANE.");
+  }
+
+  function askRobertForChip() {
+    if (!setupComplete || bankroll > 0) return;
+    const success = Math.random() < 0.25;
+    if (success) {
+      setBankroll(25);
+      setPlayerBet(0);
+      setPhase("betting");
+      setRoundSeats([]);
+      setPlayerHands([]);
+      setDealerHand([]);
+      setHideDealerHole(true);
+      setTurnQueue([]);
+      setDialogue('Robert: "I got you."');
+      setBrokeOutcome("");
+      setMessage("Robert slid you a $25 chip. Place your bet.");
+      return;
+    }
+    setBrokeOutcome('Robert: "Sorry, not this time."');
+    setMessage("No chip this time.");
   }
 
   function askBook() {
@@ -1122,6 +1149,7 @@ export function RoxaneBlackjack() {
     && activePlayerHand.cards[0].rank === activePlayerHand.cards[1].rank
     && playerExposure + activePlayerHand.bet <= bankroll;
   const shoePct = Math.max(0, Math.min(1, shoe.length / TOTAL_SHOE_CARDS));
+  const showBrokeOverlay = setupComplete && bankroll <= 0;
 
   return (
     <section className="space-y-4">
@@ -1141,7 +1169,7 @@ export function RoxaneBlackjack() {
 
       <div className="rounded-3xl border border-[#5e0018]/55 bg-gradient-to-b from-[#d61b4d] via-[#b40033] to-[#8f0028] p-2 sm:p-4 shadow-inner">
         <div
-          className="relative h-[420px] sm:h-[500px] overflow-hidden rounded-[22px] border border-white/15"
+          className="relative h-[500px] sm:h-[620px] overflow-hidden rounded-[22px] border border-white/15"
           style={{
             backgroundImage: `radial-gradient(circle at 50% 12%, rgba(255,255,255,0.17), transparent 44%), radial-gradient(circle at 50% 96%, rgba(0,0,0,0.2), transparent 50%), url("data:image/svg+xml,${FELT_TEXTURE}")`,
           }}
@@ -1251,7 +1279,7 @@ export function RoxaneBlackjack() {
             );
           })}
 
-          <div className="absolute left-1/2 bottom-2 z-10 -translate-x-1/2">
+          <div className="absolute left-1/2 bottom-3 z-10 -translate-x-1/2">
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-1.5 rounded-xl border border-white/25 bg-black/20 px-2 py-1.5">
                 {CHIP_DENOMS.slice().reverse().map((chip) => (
@@ -1450,6 +1478,33 @@ export function RoxaneBlackjack() {
                 >
                   Enter Table
                 </button>
+              </div>
+            </div>
+          )}
+
+          {showBrokeOverlay && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/45 backdrop-blur-[1px]">
+              <div className="w-[min(92%,460px)] rounded-xl border border-white/25 bg-white p-4 text-black shadow-xl">
+                <h3 className="text-[14px] font-black uppercase tracking-[0.08em] text-[#7a001f]">You&apos;re out of chips</h3>
+                <p className="mt-2 text-[13px] text-black/75">
+                  {brokeOutcome || "Bankroll is at $0.00."}
+                </p>
+                <div className="mt-4 flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={askRobertForChip}
+                    className="rounded-lg border border-[#cc0033]/50 bg-[#cc0033] px-3 py-2 text-[12px] font-bold text-white"
+                  >
+                    Hey, Robert, can I have a $25 chip? (25% chance of success)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={hitAtm}
+                    className="rounded-lg border border-black/20 bg-white px-3 py-2 text-[12px] font-bold text-black/80"
+                  >
+                    Quit
+                  </button>
+                </div>
               </div>
             </div>
           )}
