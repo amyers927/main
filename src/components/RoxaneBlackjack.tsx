@@ -75,7 +75,7 @@ const CHARACTER_FLAGS: Record<string, string> = {
   andrew: "🇺🇸🇱🇧",
   robert: "🇺🇸🧩",
   alice: "🇨🇳",
-  roth: "🇺🇸🏳️‍🌈",
+  roth: "🇺🇸🚴",
   hank: "🇮🇳🇵🇭",
   anthony: "🇺🇸",
   chris: "🇺🇸🇬🇧",
