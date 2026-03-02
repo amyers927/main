@@ -27,6 +27,8 @@ type RoundSeat = {
   result?: string;
 };
 
+type DrinkKey = "gin_soda" | "modelo" | "margarita" | "water";
+
 type PlayerHandState = {
   cards: Card[];
   bet: number;
@@ -112,6 +114,27 @@ const CHIP_DENOMS = [
   { value: 25, label: "25", color: "#ffe2ec", ring: "#b1002c" },
   { value: 5, label: "5", color: "#dbf0ff", ring: "#1f6bb5" },
   { value: 2.5, label: "2.5", color: "#f8ede4", ring: "#c57e1e" },
+];
+
+const DRINK_LABELS: Record<DrinkKey, string> = {
+  gin_soda: "Gin & Soda",
+  modelo: "Modelo",
+  margarita: "Margarita",
+  water: "Just water (let's sober up)",
+};
+
+const DRINK_IMAGE_SRC: Record<DrinkKey, string> = {
+  gin_soda: "/images/ginsoda.png",
+  modelo: "/images/beer.png",
+  margarita: "/images/margarita.png",
+  water: "/images/water.png",
+};
+
+const DRINK_OPTIONS: Array<{ key: DrinkKey; label: string }> = [
+  { key: "gin_soda", label: DRINK_LABELS.gin_soda },
+  { key: "modelo", label: DRINK_LABELS.modelo },
+  { key: "margarita", label: DRINK_LABELS.margarita },
+  { key: "water", label: DRINK_LABELS.water },
 ];
 
 const SEAT_POSITIONS: Record<number, { left: string; top: string }> = {
@@ -441,6 +464,18 @@ function ChipStack({ amount }: { amount: number }) {
   );
 }
 
+function DrinkIcon({ drink, size = "small" }: { drink: DrinkKey; size?: "small" | "large" }) {
+  const sizeClass = size === "large" ? "h-10 w-10" : "h-7 w-7";
+  return (
+    <img
+      src={DRINK_IMAGE_SRC[drink]}
+      alt={`${DRINK_LABELS[drink]} icon`}
+      className={`${sizeClass} object-contain`}
+      loading="lazy"
+    />
+  );
+}
+
 export function RoxaneBlackjack() {
   const [shoe, setShoe] = React.useState<Card[]>(() => makeShoe(SHOE_DECKS));
   const [cutCardSeen, setCutCardSeen] = React.useState(false);
@@ -455,6 +490,8 @@ export function RoxaneBlackjack() {
   const [message, setMessage] = React.useState("Welcome to ROXANE.");
   const [dialogue, setDialogue] = React.useState("");
   const [brokeOutcome, setBrokeOutcome] = React.useState("");
+  const [drinkMenuOpen, setDrinkMenuOpen] = React.useState(false);
+  const [orderedDrink, setOrderedDrink] = React.useState<DrinkKey | null>(null);
   const [occupants, setOccupants] = React.useState<Occupant[]>([]);
   const [roundSeats, setRoundSeats] = React.useState<RoundSeat[]>([]);
   const [playerHands, setPlayerHands] = React.useState<PlayerHandState[]>([]);
@@ -557,6 +594,8 @@ export function RoxaneBlackjack() {
     setTurnQueue([]);
     setDialogue("");
     setBrokeOutcome("");
+    setDrinkMenuOpen(false);
+    setOrderedDrink(null);
     setPlayerBet(0);
     setMessage("Place your chips, then deal.");
   }
@@ -620,6 +659,8 @@ export function RoxaneBlackjack() {
     setTurnQueue([]);
     setDialogue("");
     setBrokeOutcome("");
+    setDrinkMenuOpen(false);
+    setOrderedDrink(null);
     setMessage("OG mode loaded. Place your chips, then deal.");
   }
 
@@ -1100,7 +1141,15 @@ export function RoxaneBlackjack() {
     setTurnQueue([]);
     setDialogue("");
     setBrokeOutcome("");
+    setDrinkMenuOpen(false);
+    setOrderedDrink(null);
     setMessage("Welcome to ROXANE.");
+  }
+
+  function orderDrink(drink: DrinkKey) {
+    setOrderedDrink(drink);
+    setDrinkMenuOpen(false);
+    setMessage(`You ordered ${DRINK_LABELS[drink]}.`);
   }
 
   function askRobertForChip() {
@@ -1447,6 +1496,51 @@ export function RoxaneBlackjack() {
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="absolute right-3 bottom-3 z-10 w-[300px]">
+            {orderedDrink && !drinkMenuOpen && (
+              <div className="mb-2 ml-auto flex w-fit items-center gap-2 rounded-lg border border-[#b1002c]/35 bg-white px-2.5 py-1.5 text-[#8a0023] shadow-[0_4px_12px_rgba(0,0,0,0.2)]">
+                <DrinkIcon drink={orderedDrink} size="large" />
+                <span className="text-[11px] font-semibold">{DRINK_LABELS[orderedDrink]}</span>
+              </div>
+            )}
+
+            {drinkMenuOpen && (
+              <div className="mb-2 rounded-xl border border-[#b1002c]/35 bg-white p-2.5 shadow-[0_10px_24px_rgba(0,0,0,0.32)]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#8a0023]">Order a drink</p>
+                <div className="mt-1.5 flex flex-col gap-1">
+                  {DRINK_OPTIONS.map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      onClick={() => orderDrink(option.key)}
+                      className="flex items-center gap-2 rounded-md border border-[#b1002c]/25 bg-white px-2 py-1.5 text-left text-[11px] font-semibold text-[#6e001b] transition hover:bg-[#fff6f8]"
+                    >
+                      <DrinkIcon drink={option.key} />
+                      <span>{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setDrinkMenuOpen((prev) => !prev)}
+              title={drinkMenuOpen ? "Close drink menu" : "Open drink menu"}
+              className="ml-auto flex w-[156px] flex-col items-center gap-2 rounded-xl border border-[#b1002c]/35 bg-white px-2 py-2 text-[#8a0023] shadow-[0_8px_20px_rgba(0,0,0,0.25)] transition hover:bg-[#fff7f9]"
+            >
+              <span className="grid h-28 w-full place-items-center overflow-hidden rounded-xl border border-[#b1002c]/30 bg-[#fff7f9]">
+                <img
+                  src="/images/waitress-vegas-waistup.png"
+                  alt="Cartoon waitress holding a tray"
+                  className="h-full w-full object-contain"
+                  loading="eager"
+                />
+              </span>
+              <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-center">Order a drink</span>
+            </button>
           </div>
 
           {!setupComplete && (
