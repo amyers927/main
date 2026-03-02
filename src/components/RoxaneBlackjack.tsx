@@ -1150,6 +1150,7 @@ export function RoxaneBlackjack() {
     && playerExposure + activePlayerHand.bet <= bankroll;
   const shoePct = Math.max(0, Math.min(1, shoe.length / TOTAL_SHOE_CARDS));
   const showBrokeOverlay = setupComplete && bankroll <= 0;
+  const robertDeclined = brokeOutcome === 'Robert: "Sorry, not this time."';
 
   return (
     <section className="space-y-4">
@@ -1490,19 +1491,21 @@ export function RoxaneBlackjack() {
                   {brokeOutcome || "Bankroll is at $0.00."}
                 </p>
                 <div className="mt-4 flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={askRobertForChip}
-                    className="rounded-lg border border-[#cc0033]/50 bg-[#cc0033] px-3 py-2 text-[12px] font-bold text-white"
-                  >
-                    Hey, Robert, can I have a $25 chip? (25% chance of success)
-                  </button>
+                  {!robertDeclined && (
+                    <button
+                      type="button"
+                      onClick={askRobertForChip}
+                      className="rounded-lg border border-[#cc0033]/50 bg-[#cc0033] px-3 py-2 text-[12px] font-bold text-white"
+                    >
+                      Hey, Robert, can I have a $25 chip? (25% chance of success)
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={hitAtm}
                     className="rounded-lg border border-black/20 bg-white px-3 py-2 text-[12px] font-bold text-black/80"
                   >
-                    Quit
+                    {robertDeclined ? "Fine, okay" : "Quit"}
                   </button>
                 </div>
               </div>
