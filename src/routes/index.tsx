@@ -16,15 +16,20 @@ const JeopardyTerminal = React.lazy(async () => {
   return { default: mod.JeopardyTerminal };
 });
 
-type TabKey = "about" | "resume" | "gallery" | "shots" | "gin_rummy" | "jeopardy";
+const RoxaneBlackjack = React.lazy(async () => {
+  const mod = await import("../components/RoxaneBlackjack");
+  return { default: mod.RoxaneBlackjack };
+});
+
+type TabKey = "about" | "resume" | "shots" | "gin_rummy" | "jeopardy" | "roxane";
 
 const TABS: Array<{ key: TabKey; label: string; mobileLabel: string }> = [
   { key: "about", label: "About Me", mobileLabel: "About" },
   { key: "resume", label: "Resumé", mobileLabel: "Res" },
-  { key: "gallery", label: "Gallery", mobileLabel: "Gal" },
   { key: "shots", label: "SHOTS!", mobileLabel: "Shots" },
   { key: "gin_rummy", label: "Gin Rummy", mobileLabel: "Gin" },
   { key: "jeopardy", label: "Jeopardy", mobileLabel: "Jep" },
+  { key: "roxane", label: "ROXANE", mobileLabel: "ROX" },
 ];
 
 type ResumeRole = {
@@ -135,9 +140,48 @@ function ResumeTextList({ items }: { items: string[] }) {
 
 function Home() {
   const [active, setActive] = React.useState<TabKey>("about");
+  const [isDesktop, setIsDesktop] = React.useState(() =>
+    typeof window === "undefined" ? true : window.innerWidth >= 640,
+  );
+  const [showShotsVideo, setShowShotsVideo] = React.useState(false);
   const shotsRef = React.useRef<HTMLVideoElement | null>(null);
+  const visibleTabs = React.useMemo(
+    () => TABS.filter((tab) => {
+      if (tab.key === "roxane") return isDesktop;
+      if (tab.key === "jeopardy") return isDesktop;
+      if (tab.key === "shots") return !isDesktop;
+      return true;
+    }),
+    [isDesktop],
+  );
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => setIsDesktop(window.innerWidth >= 640);
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  React.useEffect(() => {
+    if (!visibleTabs.some((tab) => tab.key === active)) {
+      setActive("about");
+    }
+  }, [active, visibleTabs]);
+
+  React.useEffect(() => {
+    if (!showShotsVideo) return;
+    const video = shotsRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    void video.play();
+  }, [showShotsVideo]);
 
   function playShotVideo() {
+    if (!showShotsVideo) {
+      setShowShotsVideo(true);
+      return;
+    }
     const video = shotsRef.current;
     if (!video) return;
     video.currentTime = 0;
@@ -146,7 +190,7 @@ function Home() {
 
   return (
     <>
-      <RetroPopups />
+      {import.meta.env.PROD && <RetroPopups />}
       <div
         className="min-h-dvh flex items-start justify-center pt-16 px-4"
         style={{
@@ -156,10 +200,15 @@ function Home() {
           backgroundSize: "auto, 300px auto",
         }}
       >
-        <div className="w-full max-w-[680px] rounded-[22px] overflow-hidden border border-black/10 bg-white/80 backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.22)]">
+        <div
+          className={[
+            "w-full rounded-[22px] overflow-hidden border border-black/10 bg-white/80 backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.22)]",
+            active === "roxane" ? "max-w-[1200px]" : "max-w-[680px]",
+          ].join(" ")}
+        >
           <div className="overflow-x-auto px-2 sm:px-4 pt-2 sm:pt-4 bg-white/70 border-b border-black/10">
             <div className="flex w-max min-w-full justify-start sm:justify-center gap-1 sm:gap-2" role="tablist" aria-label="Console tabs">
-            {TABS.map((t) => {
+            {visibleTabs.map((t) => {
               const isActive = t.key === active;
               return (
                 <button
@@ -279,25 +328,21 @@ function Home() {
                 </ResumeSection>
               </section>
             )}
-            {active === "gallery" && (
-              <section className="space-y-2">
-                <h2 className="text-[18px] font-bold tracking-tight">Gallery</h2>
-                <p className="text-black/70 text-[14px] leading-relaxed">Placeholder: coming soon.</p>
-              </section>
-            )}
-            {active === "shots" && (
+            {!isDesktop && active === "shots" && (
               <section className="space-y-3 flex flex-col items-center text-center">
                 <h2 className="text-[18px] font-bold tracking-tight">SHOTS!</h2>
-                <video
-                  ref={shotsRef}
-                  src="/images/shots-small.m4v"
-                  muted
-                  playsInline
-                  preload="metadata"
-                  disablePictureInPicture
-                  onContextMenu={(e) => e.preventDefault()}
-                  className="w-full max-w-[170px] rounded-xl border border-black/10 shadow-sm grayscale pointer-events-none select-none"
-                />
+                {showShotsVideo && (
+                  <video
+                    ref={shotsRef}
+                    src="/images/shots-small.m4v"
+                    muted
+                    playsInline
+                    preload="metadata"
+                    disablePictureInPicture
+                    onContextMenu={(e) => e.preventDefault()}
+                    className="w-full max-w-[170px] rounded-xl border border-black/10 shadow-sm grayscale pointer-events-none select-none"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={playShotVideo}
@@ -317,13 +362,22 @@ function Home() {
                 </React.Suspense>
               </section>
             )}
-            {active === "jeopardy" && (
+            {isDesktop && active === "jeopardy" && (
               <section className="space-y-2">
                 <h2 className="text-[18px] font-bold tracking-tight">Jeopardy</h2>
                 <React.Suspense
                   fallback={<p className="text-[13px] text-black/60">Loading Jeopardy...</p>}
                 >
                   <JeopardyTerminal />
+                </React.Suspense>
+              </section>
+            )}
+            {isDesktop && active === "roxane" && (
+              <section className="space-y-2">
+                <React.Suspense
+                  fallback={<p className="text-[13px] text-black/60">Loading ROXANE...</p>}
+                >
+                  <RoxaneBlackjack />
                 </React.Suspense>
               </section>
             )}
