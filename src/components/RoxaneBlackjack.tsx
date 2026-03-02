@@ -150,18 +150,27 @@ const FELT_TEXTURE = encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
     <defs>
       <filter id="feltNoise" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/>
+        <feTurbulence type="fractalNoise" baseFrequency="1.05" numOctaves="3" stitchTiles="stitch" seed="3"/>
         <feColorMatrix type="saturate" values="0"/>
         <feComponentTransfer>
-          <feFuncA type="table" tableValues="0 0.22"/>
+          <feFuncA type="table" tableValues="0 0.26"/>
+        </feComponentTransfer>
+      </filter>
+      <filter id="feltFibers" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.03 1.5" numOctaves="1" stitchTiles="stitch" seed="7"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer>
+          <feFuncA type="table" tableValues="0 0.18"/>
         </feComponentTransfer>
       </filter>
     </defs>
-    <rect width="180" height="180" fill="rgba(255,255,255,0.03)"/>
-    <rect width="180" height="180" filter="url(#feltNoise)" opacity="0.6"/>
-    <g opacity="0.22">
-      <path d="M0 34h180M0 95h180M0 152h180" stroke="rgba(255,255,255,0.11)" stroke-width="0.6"/>
-      <path d="M22 0v180M88 0v180M146 0v180" stroke="rgba(0,0,0,0.08)" stroke-width="0.6"/>
+    <rect width="180" height="180" fill="rgba(255,255,255,0.025)"/>
+    <rect width="180" height="180" filter="url(#feltNoise)" opacity="0.65"/>
+    <rect width="180" height="180" filter="url(#feltFibers)" opacity="0.45"/>
+    <g opacity="0.16">
+      <path d="M12 18l18 7M46 28l16 6M82 16l20 8M121 26l17 6M149 18l16 7" stroke="rgba(255,255,255,0.18)" stroke-width="0.7"/>
+      <path d="M20 70l16 7M58 64l20 8M95 74l17 6M132 66l19 8M158 76l14 6" stroke="rgba(0,0,0,0.14)" stroke-width="0.7"/>
+      <path d="M14 124l18 7M48 132l17 6M86 122l20 8M126 136l17 6M154 126l15 6" stroke="rgba(255,255,255,0.16)" stroke-width="0.7"/>
     </g>
   </svg>`,
 );
@@ -1226,11 +1235,25 @@ export function RoxaneBlackjack() {
 
       <div className="rounded-3xl border border-[#5e0018]/55 bg-gradient-to-b from-[#d61b4d] via-[#b40033] to-[#8f0028] p-2 sm:p-4 shadow-inner">
         <div
-          className="relative h-[500px] sm:h-[620px] overflow-hidden rounded-[22px] border border-white/15"
+          className="relative isolate h-[500px] sm:h-[620px] overflow-hidden rounded-[22px] border border-white/15"
           style={{
             backgroundImage: `radial-gradient(circle at 50% 12%, rgba(255,255,255,0.17), transparent 44%), radial-gradient(circle at 50% 96%, rgba(0,0,0,0.2), transparent 50%), url("data:image/svg+xml,${FELT_TEXTURE}")`,
           }}
         >
+          <div className="pointer-events-none absolute inset-0 -z-10">
+            <div className="absolute inset-[16px] rounded-[38px] border border-white/10" />
+            <div className="absolute left-1/2 top-[16%] h-[40%] w-[84%] -translate-x-1/2 rounded-[48%] border border-white/5" />
+            <div className="absolute left-1/2 top-[48%] h-[34%] w-[72%] -translate-x-1/2 rounded-[50%] border border-white/10" />
+            <div className="absolute left-1/2 top-[41%] h-px w-[56%] -translate-x-1/2 bg-white/10" />
+            <div className="absolute left-1/2 top-[77%] h-px w-[48%] -translate-x-1/2 bg-white/10" />
+            <p
+              className="absolute left-1/2 top-[26%] -translate-x-1/2 text-center text-[36px] sm:text-[58px] tracking-[0.05em] text-white/[0.12] whitespace-nowrap"
+              style={{ fontFamily: "'Snell Roundhand', 'Brush Script MT', 'Lucida Handwriting', cursive" }}
+            >
+              Andy&apos;s Caf&eacute; Am&eacute;ricain
+            </p>
+          </div>
+
           <div className="absolute left-3 top-2 rounded-lg border border-white/20 bg-black/20 px-2 py-1 text-[11px] font-bold text-white/90">
             Bankroll: ${bankroll.toFixed(2)} · Table Min: ${TABLE_MIN}
           </div>
