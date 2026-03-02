@@ -841,6 +841,11 @@ export function RoxaneBlackjack() {
     if (queue.length > 0) {
       const activeId = queue[0];
       if (isPlayerToken(activeId)) {
+        const activeHandIdx = playerTokenIndex(activeId);
+        const activeHand = activeHandIdx >= 0 ? playerHands[activeHandIdx] : undefined;
+        if (activeHand) {
+          setDialogue(`Roxane: You have ${handValue(activeHand.cards)}.`);
+        }
         setMessage("Your turn. Choose Hit, Stand, Double, Split, or Ask Roxane.");
         return;
       }
@@ -946,7 +951,7 @@ export function RoxaneBlackjack() {
       queue.shift();
     }
 
-    setDialogue(actorLine(playerName, "hit"));
+    setDialogue(`Roxane: You have ${total}.`);
     setMessage("You acted.");
     setPlayerHands(hands);
     setTurnQueue(queue);
@@ -963,7 +968,7 @@ export function RoxaneBlackjack() {
     if (!hand) return;
     hand.stood = true;
     const queue = turnQueue.slice(1);
-    setDialogue(actorLine(playerName, "stand"));
+    setDialogue(`Roxane: You have ${handValue(hand.cards)}.`);
     setMessage("You acted.");
     setPlayerHands(hands);
     setTurnQueue(queue);
@@ -1096,8 +1101,6 @@ export function RoxaneBlackjack() {
   const canAddSeat = occupants.length < seatCapacity;
   const friendCount = occupants.filter((o) => o.kind === "friend").length;
   const canAddFriend = canAddSeat && friendCount < MAX_FRIEND_SEATS && availableFriendNames.length > 0;
-  const playerSeat = roundSeats.find((seat) => seat.kind === "player");
-  const playerTotal = playerHands.length > 0 ? handValue(playerHands[playerTokenIndex(turnQueue[0])]?.cards ?? playerHands[0].cards) : (playerSeat ? handValue(playerSeat.hand) : 0);
   const currentTurnId = phase === "in_round" ? turnQueue[0] : undefined;
   const activePlayerHandIdx = playerTokenIndex(currentTurnId);
   const activePlayerHand = activePlayerHandIdx >= 0 ? playerHands[activePlayerHandIdx] : undefined;
@@ -1163,7 +1166,6 @@ export function RoxaneBlackjack() {
           )}
           <div className="absolute left-1/2 top-[40%] z-10 w-[min(80%,430px)] -translate-x-1/2 rounded-lg border border-white/30 bg-black/25 px-3 py-2 text-center text-[12px] font-semibold text-white/95">
             {message}
-            {phase === "in_round" && playerSeat ? ` Your total: ${playerTotal}.` : ""}
             {needsReshuffle ? " Scarlet cut card is out. Shoe will reshuffle after this hand." : ""}
           </div>
 
