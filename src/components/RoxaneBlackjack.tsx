@@ -120,7 +120,7 @@ const DRINK_LABELS: Record<DrinkKey, string> = {
   gin_soda: "Gin & Soda",
   modelo: "Modelo",
   margarita: "Margarita",
-  water: "Just water (let's sober up)",
+  water: "Just Water (Let's Sober Up)",
 };
 
 const DRINK_IMAGE_SRC: Record<DrinkKey, string> = {
