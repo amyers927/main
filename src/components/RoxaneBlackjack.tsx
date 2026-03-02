@@ -890,6 +890,13 @@ export function RoxaneBlackjack() {
       return;
     }
 
+    if (hideDealerHole) {
+      setHideDealerHole(false);
+      setDealerHand(dealer);
+      setMessage("Roxane reveals her hole card.");
+      return;
+    }
+
     while (dealer.length < 2) {
       const d = drawFromShoe(workingShoe);
       if (!d) break;
