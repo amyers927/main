@@ -321,6 +321,7 @@ function playerTokenIndex(token: string | undefined) {
 
 function chipBreakdown(amount: number) {
   let remaining = Number(amount.toFixed(2));
+  if (remaining <= 0) return [];
   const picks: Array<{ value: number; color: string; ring: string }> = [];
 
   CHIP_DENOMS.forEach((chip) => {
@@ -329,11 +330,6 @@ function chipBreakdown(amount: number) {
       remaining = Number((remaining - chip.value).toFixed(2));
     }
   });
-
-  if (picks.length === 0) {
-    const fallback = CHIP_DENOMS[CHIP_DENOMS.length - 1];
-    picks.push(fallback);
-  }
 
   return picks;
 }
@@ -421,6 +417,7 @@ function ChipButton({ label, color, ring, onClick, disabled }: { label: string; 
 
 function ChipStack({ amount }: { amount: number }) {
   const chips = chipBreakdown(amount);
+  if (chips.length === 0) return null;
   return (
     <div className="relative h-4 w-12">
       {chips.map((chip, idx) => (
@@ -453,7 +450,7 @@ export function RoxaneBlackjack() {
   const [setupName, setSetupName] = React.useState("");
   const [setupPlayers, setSetupPlayers] = React.useState(4);
   const [bankroll, setBankroll] = React.useState(STARTING_BANKROLL);
-  const [playerBet, setPlayerBet] = React.useState(TABLE_MIN);
+  const [playerBet, setPlayerBet] = React.useState(0);
   const [phase, setPhase] = React.useState<Phase>("betting");
   const [message, setMessage] = React.useState("Welcome to ROXANE.");
   const [dialogue, setDialogue] = React.useState("");
@@ -558,6 +555,7 @@ export function RoxaneBlackjack() {
     setPlayerHands([]);
     setTurnQueue([]);
     setDialogue("");
+    setPlayerBet(0);
     setMessage("Place your chips, then deal.");
   }
 
@@ -609,7 +607,7 @@ export function RoxaneBlackjack() {
     setBuddiesCount(nextOccupants.length);
     setPhase("betting");
     setBankroll(STARTING_BANKROLL);
-    setPlayerBet(TABLE_MIN);
+    setPlayerBet(0);
     setShoe(makeShoe(SHOE_DECKS));
     setCutCardSeen(false);
     setNeedsReshuffle(false);
@@ -633,7 +631,7 @@ export function RoxaneBlackjack() {
 
   function clearBet() {
     if (phase !== "betting") return;
-    setPlayerBet(TABLE_MIN);
+    setPlayerBet(0);
   }
 
   function finalizeRound(seatState: RoundSeat[], dealerState: Card[], playerHandsState = playerHands) {
@@ -1060,6 +1058,7 @@ export function RoxaneBlackjack() {
     setHideDealerHole(true);
     setTurnQueue([]);
     setDialogue("");
+    setPlayerBet(0);
     if (needsReshuffle) {
       setShoe(makeShoe(SHOE_DECKS));
       setCutCardSeen(false);
@@ -1071,8 +1070,13 @@ export function RoxaneBlackjack() {
   }
 
   function hitAtm() {
+    setBuddiesCount(null);
+    setPlayerName("You");
+    setSetupName("");
+    setSetupPlayers(4);
+    setOccupants([]);
     setBankroll(STARTING_BANKROLL);
-    setPlayerBet(TABLE_MIN);
+    setPlayerBet(0);
     setShoe(makeShoe(SHOE_DECKS));
     setCutCardSeen(false);
     setNeedsReshuffle(false);
@@ -1083,7 +1087,7 @@ export function RoxaneBlackjack() {
     setHideDealerHole(true);
     setTurnQueue([]);
     setDialogue("");
-    setMessage("ATM run complete. Fresh bankroll and fresh shoe.");
+    setMessage("Welcome to ROXANE.");
   }
 
   function askBook() {
@@ -1247,164 +1251,164 @@ export function RoxaneBlackjack() {
             );
           })}
 
-          <div className="absolute left-1/2 bottom-22 z-10 -translate-x-1/2">
-            <div className="flex items-center gap-1.5 rounded-xl border border-white/25 bg-black/20 px-2 py-1.5">
-              {CHIP_DENOMS.slice().reverse().map((chip) => (
-                <ChipButton
-                  key={chip.label}
-                  label={chip.label}
-                  color={chip.color}
-                  ring={chip.ring}
-                  disabled={!setupComplete || phase !== "betting" || playerBet + chip.value > bankroll}
-                  onClick={() => addChip(chip.value)}
-                />
-              ))}
-              <button
-                type="button"
-                disabled={!setupComplete || phase !== "betting"}
-                onClick={clearBet}
-                className="rounded-md border border-white/35 bg-black/25 px-2 py-1 text-[11px] font-semibold text-white disabled:opacity-45"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-
           <div className="absolute left-1/2 bottom-2 z-10 -translate-x-1/2">
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="flex flex-wrap justify-center gap-1.5">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-1.5 rounded-xl border border-white/25 bg-black/20 px-2 py-1.5">
+                {CHIP_DENOMS.slice().reverse().map((chip) => (
+                  <ChipButton
+                    key={chip.label}
+                    label={chip.label}
+                    color={chip.color}
+                    ring={chip.ring}
+                    disabled={!setupComplete || phase !== "betting" || playerBet + chip.value > bankroll}
+                    onClick={() => addChip(chip.value)}
+                  />
+                ))}
                 <button
                   type="button"
                   disabled={!setupComplete || phase !== "betting"}
-                  onClick={startRound}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    setupComplete && phase === "betting"
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
+                  onClick={clearBet}
+                  className="rounded-md border border-white/35 bg-black/25 px-2 py-1 text-[11px] font-semibold text-white disabled:opacity-45"
                 >
-                  Deal
-                </button>
-                <button
-                  type="button"
-                  disabled={!isPlayerTurn}
-                  onClick={playerHit}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    isPlayerTurn
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
-                >
-                  Hit
-                </button>
-                <button
-                  type="button"
-                  disabled={!isPlayerTurn}
-                  onClick={playerStand}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    isPlayerTurn
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
-                >
-                  Stand
-                </button>
-                <button
-                  type="button"
-                  disabled={!canDouble}
-                  onClick={playerDouble}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    canDouble
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
-                >
-                  Double
-                </button>
-                <button
-                  type="button"
-                  disabled={!canSplit}
-                  onClick={playerSplit}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    canSplit
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
-                >
-                  Split
-                </button>
-                <button
-                  type="button"
-                  disabled={!canAdvanceNpc}
-                  onClick={nextCard}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    canAdvanceNpc
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
-                >
-                  Next Card
-                </button>
-                <button
-                  type="button"
-                  disabled={!isPlayerTurn}
-                  onClick={askBook}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    isPlayerTurn
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
-                >
-                  Ask Roxane
+                  Reset
                 </button>
               </div>
-              <div className="flex flex-wrap justify-center gap-1.5">
-                <button
-                  type="button"
-                  disabled={!setupComplete || !canAddFriend || phase !== "betting"}
-                  onClick={addFriend}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    setupComplete && canAddFriend && phase === "betting"
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
-                >
-                  Add Friend
-                </button>
-                <button
-                  type="button"
-                  disabled={!setupComplete || !canAddSeat || phase !== "betting"}
-                  onClick={addRando}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    setupComplete && canAddSeat && phase === "betting"
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
-                >
-                  Add Rando
-                </button>
-                <button
-                  type="button"
-                  disabled={phase !== "round_over"}
-                  onClick={nextHand}
-                  className={[
-                    "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
-                    phase === "round_over"
-                      ? "border-white/80 bg-white text-black"
-                      : "border-white/30 bg-[#a4a4a4] text-black/90",
-                  ].join(" ")}
-                >
-                  Next Hand
-                </button>
+
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={!setupComplete || phase !== "betting"}
+                    onClick={startRound}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      setupComplete && phase === "betting"
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Deal
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!isPlayerTurn}
+                    onClick={playerHit}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      isPlayerTurn
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Hit
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!isPlayerTurn}
+                    onClick={playerStand}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      isPlayerTurn
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Stand
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!canDouble}
+                    onClick={playerDouble}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      canDouble
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Double
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!canSplit}
+                    onClick={playerSplit}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      canSplit
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Split
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!canAdvanceNpc}
+                    onClick={nextCard}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      canAdvanceNpc
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Next Card
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!isPlayerTurn}
+                    onClick={askBook}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      isPlayerTurn
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Ask Roxane
+                  </button>
+                </div>
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={!setupComplete || !canAddFriend || phase !== "betting"}
+                    onClick={addFriend}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      setupComplete && canAddFriend && phase === "betting"
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Add Friend
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!setupComplete || !canAddSeat || phase !== "betting"}
+                    onClick={addRando}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      setupComplete && canAddSeat && phase === "betting"
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Add Rando
+                  </button>
+                  <button
+                    type="button"
+                    disabled={phase !== "round_over"}
+                    onClick={nextHand}
+                    className={[
+                      "rounded-md border px-3 py-1.5 text-[12px] font-semibold disabled:opacity-45",
+                      phase === "round_over"
+                        ? "border-white/80 bg-white text-black"
+                        : "border-white/30 bg-[#a4a4a4] text-black/90",
+                    ].join(" ")}
+                  >
+                    Next Hand
+                  </button>
+                </div>
               </div>
             </div>
           </div>
