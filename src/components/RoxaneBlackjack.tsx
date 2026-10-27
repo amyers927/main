@@ -184,7 +184,7 @@ function shuffle<T>(arr: T[]) {
   return a;
 }
 
-function makeShoe(decks: number) {
+export function makeShoe(decks: number) {
   const cards: Card[] = [];
   for (let d = 0; d < decks; d += 1) {
     for (const suit of SUITS) {
@@ -210,7 +210,7 @@ function cardPoint(rank: Rank) {
   return Number(rank);
 }
 
-function handValue(cards: Card[]) {
+export function handValue(cards: Card[]) {
   let total = cards.reduce((sum, c) => sum + cardPoint(c.rank), 0);
   let aces = cards.filter((c) => c.rank === "A").length;
   while (total > 21 && aces > 0) {
@@ -230,7 +230,7 @@ function hasSoftAce(cards: Card[]) {
   return cards.some((c) => c.rank === "A") && total <= 21 && aces > 0;
 }
 
-function isBlackjack(cards: Card[]) {
+export function isBlackjack(cards: Card[]) {
   return cards.length === 2 && handValue(cards) === 21;
 }
 
