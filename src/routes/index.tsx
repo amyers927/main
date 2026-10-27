@@ -244,7 +244,7 @@ function Home() {
                   <div className="space-y-3 text-black/75 text-[13px] leading-relaxed">
                     <p>Hi, my name is Andrew; welcome to my website! It's nice to get to know you.</p>
                     <p>
-                      Right now, I work in operations at an end-to-end jewelry manufacturer called Xomox Jewelry on 40th street,
+                      Right now, I work in operations at an end-to-end jewelry manufacturer called Xomox Jewelry on 40th Street,
                       where I build systems, autonomous and not, to track workflows and manage inventories across multiple
                       departments. Before this, I worked at Liv Breads (bakery) in Millburn, NJ; I miss their pastries all the
                       time!
