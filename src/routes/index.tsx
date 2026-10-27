@@ -62,7 +62,7 @@ const RESUME_ROLES: ResumeRole[] = [
     company: "Black Snow Capital",
     title: "Investment Associate",
     dates: "Sep 2017 - Oct 2018",
-    location: "New York City Metro Area",
+    location: "New York, NY",
   },
 ];
 
