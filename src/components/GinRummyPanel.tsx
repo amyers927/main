@@ -23,7 +23,7 @@ const RANK_TO_NUM: Record<Rank, number> = { A:1, "2":2,"3":3,"4":4,"5":5,"6":6,"
 function cardLabel(c: Card) { return `${c.rank}${c.suit}`; }
 function isRed(suit: Suit) { return suit === "♥" || suit === "♦"; }
 
-function makeDeck(): Card[] {
+export function makeDeck(): Card[] {
   const d: Card[] = [];
   for (const s of SUITS) for (const r of RANKS) d.push({ rank: r, suit: s, id: `${r}${s}` });
   return shuffle(d);
@@ -117,7 +117,7 @@ function allMelds(hand: Card[]): Meld[] {
   return melds.filter(m => (seen.has(m.key) ? false : (seen.add(m.key), true)));
 }
 
-function bestMeldLayout(hand: Card[]) {
+export function bestMeldLayout(hand: Card[]) {
   const melds = allMelds(hand);
 
   const handIds = new Set(hand.map(c => c.id));
@@ -198,10 +198,12 @@ function chooseDiscard(hand: Card[]) {
   return best;
 }
 
-function aiDecideDraw(snapshot: AISnapshot, rollouts = 60) {
+export function aiDecideDraw(snapshot: AISnapshot, rollouts = 60) {
   // Return "discard" if taking discardTop is better than drawing unknown stock (expected)
   const discardTop = snapshot.discardTop;
   if (!discardTop) return "stock";
+  // There is no unknown stock to sample once it is exhausted.
+  if (snapshot.stockSize === 0) return "discard";
 
   const base = bestMeldLayout(snapshot.aiHand).deadwood;
   const takeDiscardHand = [...snapshot.aiHand, discardTop];

@@ -52,11 +52,13 @@ function normalize(text: string): string {
   return t;
 }
 
-function checkAnswer(user: string, correct: string): boolean {
+export function checkAnswer(user: string, correct: string): boolean {
   const u = normalize(user);
   const c = normalize(correct);
   if (!u || !c) return false;
-  return u === c || u.includes(c) || c.includes(u);
+  // Keep accepting a surname or a response with extra words, but require
+  // complete words: "Ham" must not count as "Hamlet".
+  return u === c || ` ${u} `.includes(` ${c} `) || ` ${c} `.includes(` ${u} `);
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -76,19 +78,18 @@ function estimateHostReadSeconds(clueText: string): number {
   return Math.round(secs);
 }
 
-function parseDollarValue(input: string): number | null {
-  // finds first "$300" or "300" token
-  const m = (input || "").match(/\$?\s*([0-9]{2,5})/);
+export function parseDollarValue(input: string): number | null {
+  // The value ends the selection; numbers inside category names are not prices.
+  const m = (input || "").match(/\$?\s*([0-9]{2,5})\s*$/);
   if (!m) return null;
   const n = Number(m[1]);
   return Number.isFinite(n) ? Math.trunc(n) : null;
 }
 
-function stripValueFromPick(input: string): string {
-  // remove "$300", "300", and optional "for"
+export function stripValueFromPick(input: string): string {
+  // Remove only the final value and optional "for", preserving the category.
   return (input || "")
-    .replace(/\$?\s*[0-9]{2,5}/g, " ")
-    .replace(/\bfor\b/gi, " ")
+    .replace(/\s*(?:\bfor\s+)?\$?\s*[0-9]{2,5}\s*$/i, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -108,9 +109,11 @@ function scoreCategoryMatch(query: string, category: string): number {
   return score;
 }
 
-function findCategoryIndex(query: string, categories: string[]): number | null {
+export function findCategoryIndex(query: string, categories: string[]): number | null {
   const q = query.trim();
   if (!q) return null;
+  const exact = categories.findIndex((category) => category.trim().toLowerCase() === q.toLowerCase());
+  if (exact >= 0) return exact;
 
   let bestIdx = -1;
   let bestScore = -Infinity;
@@ -433,6 +436,19 @@ export function JeopardyTerminal() {
     focusInput();
   }, [focusInput]);
 
+  // A reading belongs to its clue. Leaving that phase (quit/new board/tab
+  // change) must cancel it rather than reopen an old buzz window later.
+  React.useEffect(() => {
+    if (phase !== "host_reading" || !pending) return;
+    const t = window.setTimeout(() => {
+      setPhase("buzz_open");
+      append(`BUZZ! (type: b) [${BUZZ_SECONDS}s]`);
+      setTimer(BUZZ_SECONDS);
+      focusInput();
+    }, estimateHostReadSeconds(pending.clue.clue_text) * 1000);
+    return () => window.clearTimeout(t);
+  }, [phase, pending, append, focusInput]);
+
   // tick down
   React.useEffect(() => {
     if (timer == null) return;
@@ -469,9 +485,11 @@ export function JeopardyTerminal() {
       }
     } else if (phase === "final_answer") {
       append("⏰ Time’s up on Final Jeopardy.");
-      // For brevity: end game at final timeout
+      const wager = pending?.faceValue ?? 0;
+      if (pending) append(`Correct response: ${pending.clue.response}`);
+      setScore((s) => s - wager);
       setPhase("game_over");
-      append(`Game over. Final score: $${score}`, true);
+      append(`Game over. Final score: $${score - wager}`, true);
     }
 
     setTimer(null);
@@ -479,7 +497,15 @@ export function JeopardyTerminal() {
   }, [timer, phase]);
 
 function newBoard(r: RoundId) {
-  const b = buildBoard(clues, r);
+  let b: BuiltBoard;
+  try {
+    b = buildBoard(clues, r);
+  } catch {
+    append(`Could not build round ${r}. Type load to retry loading the clue dataset.`, true);
+    return;
+  }
+  setRound(r);
+  setTimer(null);
 
   const freshPicked = Array.from({ length: NUM_COLS }, () =>
     Array.from({ length: NUM_ROWS }, () => false)
@@ -617,13 +643,6 @@ if (isDD) {
     append("");
     append(`📣 Alex is reading… (~${readSecs}s)`, true);
 
-    // after read -> buzz opens
-    window.setTimeout(() => {
-      setPhase("buzz_open");
-      append(`BUZZ! (type: b) [${BUZZ_SECONDS}s]`);
-      setTimer(BUZZ_SECONDS);
-      focusInput();
-    }, readSecs * 1000);
   }
 
   function handleCommand(raw: string) {
@@ -651,12 +670,13 @@ if (isDD) {
 
     if (cmd.toLowerCase() === "q" || cmd.toLowerCase() === "quit" || cmd.toLowerCase() === "exit") {
       append("bye 👋", true);
+      setTimer(null);
+      setPending(null);
       setPhase("game_over");
       return;
     }
 
     if (cmd.toLowerCase() === "start") {
-      setRound("1");
       newBoard("1");
       return;
     }
@@ -667,7 +687,6 @@ if (isDD) {
     }
 
     if (cmd.toLowerCase() === "next" && phase === "between_rounds" && round === "1") {
-      setRound("2");
       newBoard("2");
       return;
     }
@@ -694,7 +713,7 @@ if (isDD) {
 
     // phase-specific input
     if (phase === "buzz_open") {
-      if (cmd.toLowerCase() !== "b") {
+      if (cmd.toLowerCase() !== "b" && cmd.toLowerCase() !== "buzz") {
         append(`(During buzz window, type: b)`, true);
         return;
       }
