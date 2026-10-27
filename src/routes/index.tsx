@@ -81,6 +81,7 @@ const CERTIFICATIONS = [
 ];
 
 const ACCOLADES = [
+  "1st Place Trivia Finish - Franklin Park (Brooklyn, NY)",
   "2nd Place Trivia Finish - Doyle's Pour House (Barnegat, NJ)",
   "2nd Place Trivia Finish - Clara's (Bushwick, NY)",
 ];
